@@ -9,40 +9,6 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtMultimedia import QMediaPlayer
-from PyQt5.QtMultimediaWidgets import QVideoWidget
-
-
-class MyLabel(QtWidgets.QLabel):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.x0, self.y0 = 0, 0
-        self.x1, self.y1 = 0, 0
-        self.flag = False
-        self.move = False
-
-    def mousePressEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
-            self.x0, self.y0 = event.pos().x(), event.pos().y()
-            self.flag = True
-
-    def mouseMoveEvent(self, event):
-        if self.flag:
-            self.move = True
-            self.x1, self.y1 = event.pos().x(), event.pos().y()
-            self.update()
-
-    def mouseReleaseEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
-            self.flag = False
-            self.move = False
-
-    def paintEvent(self, event):
-        super().paintEvent(event)
-        if self.flag and self.move:
-            painter = QtGui.QPainter(self)
-            painter.setPen(QtGui.QPen(QtCore.Qt.red, 2, QtCore.Qt.SolidLine))
-            painter.drawRect(QtCore.QRect(self.x0, self.y0, self.x1 - self.x0, self.y1 - self.y0))
 
 
 class Ui_MainWindow(object):
@@ -50,7 +16,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1618, 947)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("GUI/icons/logo.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("GUI/UI/../icons/logo.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -88,27 +54,6 @@ class Ui_MainWindow(object):
         self.videoContainerLayout.setContentsMargins(0, 0, 0, 0)
         self.videoContainerLayout.setSpacing(0)
         self.videoContainerLayout.setObjectName("videoContainerLayout")
-        self.videoStackedLayout = QtWidgets.QStackedLayout()
-        self.videoStackedLayout.setStackingMode(QtWidgets.QStackedLayout.StackAll)
-        self.videoContainerLayout.addLayout(self.videoStackedLayout)
-        sizePolicy1 = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        self.label_3 = QtWidgets.QLabel(self.videoContainer)
-        self.label_3.setSizePolicy(sizePolicy1)
-        self.label_3.setObjectName("label_3")
-        self.videoStackedLayout.addWidget(self.label_3)
-        self.videoWidget = QVideoWidget(self.videoContainer)
-        sizePolicy2 = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        self.videoWidget.setSizePolicy(sizePolicy2)
-        self.videoWidget.setObjectName("videoWidget")
-        self.videoStackedLayout.addWidget(self.videoWidget)
-        self.label_4 = None
-        self.mediaPlayer = QMediaPlayer(self.videoContainer)
-        self.mediaPlayer.setVideoOutput(self.videoWidget)
-        self.disableLabel4()
         self.verticalLayout_videoContainer.addWidget(self.videoContainer)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.layoutWidget = QtWidgets.QWidget(self.splitter)
@@ -129,67 +74,85 @@ class Ui_MainWindow(object):
         self.frame_2.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_2.setObjectName("frame_2")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.frame_2)
+        self.verticalLayout_2.setContentsMargins(12, 12, 12, 12)
+        self.verticalLayout_2.setSpacing(12)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.progressBar = QtWidgets.QProgressBar(self.frame_2)
-        self.progressBar.setObjectName("progressBar")
+        self.groupBox_video_controls = QtWidgets.QGroupBox(self.frame_2)
+        self.groupBox_video_controls.setObjectName("groupBox_video_controls")
+        self.verticalLayout_video_controls = QtWidgets.QVBoxLayout(self.groupBox_video_controls)
+        self.verticalLayout_video_controls.setContentsMargins(12, 12, 12, 12)
+        self.verticalLayout_video_controls.setSpacing(8)
+        self.verticalLayout_video_controls.setObjectName("verticalLayout_video_controls")
+        self.progressBar = QtWidgets.QProgressBar(self.groupBox_video_controls)
         self.progressBar.setVisible(False)
-        self.progressBar.setValue(0)
-        self.progressBar.hide()
-        self.verticalLayout_2.addWidget(self.progressBar)
-        self.label_5 = QtWidgets.QLabel(self.frame_2)
-        self.label_5.setStyleSheet("font: 75 11pt \"Arial\";\n"
-"")
-        self.label_5.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
-        self.label_5.setObjectName("label_5")
-        self.verticalLayout_2.addWidget(self.label_5)
-        self.horizontalSlider = QtWidgets.QSlider(self.frame_2)
+        self.progressBar.setProperty("value", 0)
+        self.progressBar.setObjectName("progressBar")
+        self.verticalLayout_video_controls.addWidget(self.progressBar)
+        self.horizontalSlider = QtWidgets.QSlider(self.groupBox_video_controls)
         self.horizontalSlider.setEnabled(False)
         self.horizontalSlider.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider.setObjectName("horizontalSlider")
-        self.verticalLayout_2.addWidget(self.horizontalSlider)
-        self.pushButton = QtWidgets.QPushButton(self.frame_2)
+        self.verticalLayout_video_controls.addWidget(self.horizontalSlider)
+        self.gridLayout_video_buttons = QtWidgets.QGridLayout()
+        self.gridLayout_video_buttons.setSpacing(8)
+        self.gridLayout_video_buttons.setObjectName("gridLayout_video_buttons")
+        self.pushButton = QtWidgets.QPushButton(self.groupBox_video_controls)
         self.pushButton.setEnabled(False)
         self.pushButton.setMinimumSize(QtCore.QSize(0, 30))
         self.pushButton.setObjectName("pushButton")
-        self.verticalLayout_2.addWidget(self.pushButton)
-        self.pushButton_2 = QtWidgets.QPushButton(self.frame_2)
+        self.gridLayout_video_buttons.addWidget(self.pushButton, 0, 0, 1, 1)
+        self.pushButton_2 = QtWidgets.QPushButton(self.groupBox_video_controls)
         self.pushButton_2.setEnabled(False)
         self.pushButton_2.setMinimumSize(QtCore.QSize(0, 30))
         self.pushButton_2.setObjectName("pushButton_2")
-        self.verticalLayout_2.addWidget(self.pushButton_2)
-        self.pushButton_3 = QtWidgets.QPushButton(self.frame_2)
+        self.gridLayout_video_buttons.addWidget(self.pushButton_2, 0, 1, 1, 1)
+        self.pushButton_4 = QtWidgets.QPushButton(self.groupBox_video_controls)
+        self.pushButton_4.setEnabled(False)
+        self.pushButton_4.setMinimumSize(QtCore.QSize(0, 30))
+        self.pushButton_4.setObjectName("pushButton_4")
+        self.gridLayout_video_buttons.addWidget(self.pushButton_4, 0, 2, 1, 1)
+        self.verticalLayout_video_controls.addLayout(self.gridLayout_video_buttons)
+        self.verticalLayout_2.addWidget(self.groupBox_video_controls)
+        self.groupBox_video_tools = QtWidgets.QGroupBox(self.frame_2)
+        self.groupBox_video_tools.setObjectName("groupBox_video_tools")
+        self.verticalLayout_video_tools = QtWidgets.QVBoxLayout(self.groupBox_video_tools)
+        self.verticalLayout_video_tools.setContentsMargins(12, 12, 12, 12)
+        self.verticalLayout_video_tools.setSpacing(8)
+        self.verticalLayout_video_tools.setObjectName("verticalLayout_video_tools")
+        self.gridLayout_frame_tools = QtWidgets.QGridLayout()
+        self.gridLayout_frame_tools.setSpacing(8)
+        self.gridLayout_frame_tools.setObjectName("gridLayout_frame_tools")
+        self.pushButton_3 = QtWidgets.QPushButton(self.groupBox_video_tools)
         self.pushButton_3.setEnabled(False)
         self.pushButton_3.setMinimumSize(QtCore.QSize(0, 30))
         self.pushButton_3.setObjectName("pushButton_3")
-        self.verticalLayout_2.addWidget(self.pushButton_3)
-        self.pushButton_4 = QtWidgets.QPushButton(self.frame_2)
-        self.pushButton_4.setEnabled(False)
-        self.pushButton_4.setObjectName("pushButton_4")
-        self.verticalLayout_2.addWidget(self.pushButton_4)
-        self.pushButton_5 = QtWidgets.QPushButton(self.frame_2)
+        self.gridLayout_frame_tools.addWidget(self.pushButton_3, 0, 0, 1, 1)
+        self.pushButton_5 = QtWidgets.QPushButton(self.groupBox_video_tools)
         self.pushButton_5.setEnabled(False)
         self.pushButton_5.setMinimumSize(QtCore.QSize(0, 30))
         self.pushButton_5.setObjectName("pushButton_5")
-        self.verticalLayout_2.addWidget(self.pushButton_5)
-        self.label_video_marking = QtWidgets.QLabel(self.frame_2)
+        self.gridLayout_frame_tools.addWidget(self.pushButton_5, 0, 1, 1, 1)
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout_frame_tools.addItem(spacerItem, 0, 2, 1, 1)
+        self.label_video_marking = QtWidgets.QLabel(self.groupBox_video_tools)
         self.label_video_marking.setStyleSheet("font: 75 11pt \"Arial\";")
         self.label_video_marking.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
         self.label_video_marking.setObjectName("label_video_marking")
-        self.verticalLayout_2.addWidget(self.label_video_marking)
-        self.pushButton_start_marking = QtWidgets.QPushButton(self.frame_2)
+        self.gridLayout_frame_tools.addWidget(self.label_video_marking, 1, 0, 1, 3)
+        self.pushButton_start_marking = QtWidgets.QPushButton(self.groupBox_video_tools)
         self.pushButton_start_marking.setEnabled(False)
         self.pushButton_start_marking.setMinimumSize(QtCore.QSize(0, 30))
         self.pushButton_start_marking.setObjectName("pushButton_start_marking")
-        self.verticalLayout_2.addWidget(self.pushButton_start_marking)
+        self.gridLayout_frame_tools.addWidget(self.pushButton_start_marking, 2, 0, 1, 3)
+        self.verticalLayout_video_tools.addLayout(self.gridLayout_frame_tools)
+        self.verticalLayout_2.addWidget(self.groupBox_video_tools)
         self.verticalLayout.addWidget(self.frame_2)
         self.listWidget = QtWidgets.QListWidget(self.layoutWidget)
         self.listWidget.setObjectName("listWidget")
-        self.listWidget.setFocusPolicy(QtCore.Qt.NoFocus)
         self.verticalLayout.addWidget(self.listWidget)
         self.horizontalLayout_2.addWidget(self.splitter)
         self.horizontalLayout.addWidget(self.frame)
         MainWindow.setCentralWidget(self.centralwidget)
-        self.setSplitterSizes()
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1618, 26))
         self.menubar.setObjectName("menubar")
@@ -206,7 +169,6 @@ class Ui_MainWindow(object):
         icon1.addPixmap(QtGui.QPixmap("GUI/UI/../icons/open.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionOpen_Dir.setIcon(icon1)
         self.actionOpen_Dir.setObjectName("actionOpen_Dir")
-        self.actionOpen_Dir.triggered.connect(self.enableLabel4)
         self.actionChange_Save_Dir = QtWidgets.QAction(MainWindow)
         icon2 = QtGui.QIcon()
         icon2.addPixmap(QtGui.QPixmap("GUI/UI/../icons/save.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -235,13 +197,11 @@ class Ui_MainWindow(object):
         icon6.addPixmap(QtGui.QPixmap("GUI/UI/../icons/video.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionOpen_Video.setIcon(icon6)
         self.actionOpen_Video.setObjectName("actionOpen_Video")
-        self.actionOpen_Video.triggered.connect(self.disableLabel4)
         self.actionVideo_marking = QtWidgets.QAction(MainWindow)
         icon7 = QtGui.QIcon()
         icon7.addPixmap(QtGui.QPixmap("GUI/UI/../icons/Video marking.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionVideo_marking.setIcon(icon7)
         self.actionVideo_marking.setObjectName("actionVideo_marking")
-        self.actionVideo_marking.triggered.connect(self.enableLabel4)
         self.actionSaveTypeYOLO = QtWidgets.QAction(MainWindow)
         self.actionSaveTypeYOLO.setCheckable(True)
         self.actionSaveTypeYOLO.setObjectName("actionSaveTypeYOLO")
@@ -263,51 +223,17 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-    def setSplitterSizes(self):
-        total_size = self.splitter.size().width()
-        if total_size <= 0:
-            return
-        size1 = int(0.8 * total_size)
-        size2 = max(total_size - size1, 0)
-        self.splitter.setSizes([size1, size2])
-
-    def _setOverlayWidget(self, widget_class):
-        if isinstance(self.label_4, widget_class):
-            return
-        if self.label_4 is not None:
-            index = self.videoStackedLayout.indexOf(self.label_4)
-            if index != -1:
-                self.videoStackedLayout.removeWidget(self.label_4)
-            self.label_4.deleteLater()
-        self.label_4 = widget_class(self.videoContainer)
-        self.label_4.setObjectName("label_4")
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        self.label_4.setSizePolicy(sizePolicy)
-        self.label_4.setMouseTracking(True)
-        self.label_4.setStyleSheet("background: transparent;")
-        accepts_events = widget_class is MyLabel
-        self.label_4.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents, not accepts_events)
-        self.videoStackedLayout.addWidget(self.label_4)
-        self.videoStackedLayout.setCurrentWidget(self.label_4)
-
-    def enableLabel4(self):
-        self._setOverlayWidget(MyLabel)
-
-    def disableLabel4(self):
-        self._setOverlayWidget(QtWidgets.QLabel)
-
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "LabelQuick"))
         self.currentImageLabel.setText(_translate("MainWindow", "当前图片：-"))
         self.label_2.setText(_translate("MainWindow", "标签箱"))
-        self.label_5.setText(_translate("MainWindow", "视频操作："))
+        self.groupBox_video_controls.setTitle(_translate("MainWindow", "视频控制"))
         self.pushButton.setText(_translate("MainWindow", "开始"))
         self.pushButton_2.setText(_translate("MainWindow", "暂停"))
-        self.pushButton_3.setText(_translate("MainWindow", "抽帧"))
         self.pushButton_4.setText(_translate("MainWindow", "重新播放"))
+        self.groupBox_video_tools.setTitle(_translate("MainWindow", "抽帧与标注"))
+        self.pushButton_3.setText(_translate("MainWindow", "抽帧"))
         self.pushButton_5.setText(_translate("MainWindow", "自动抽帧"))
         self.label_video_marking.setText(_translate("MainWindow", "视频打标"))
         self.pushButton_start_marking.setText(_translate("MainWindow", "目标跟踪"))
