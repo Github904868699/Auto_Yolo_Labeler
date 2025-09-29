@@ -248,7 +248,7 @@ class MainFunc(QMainWindow):
         self.paint_save = []
         self.labels = []
         if self.img_path:
-            self.show_qt(self.img_path)
+            self.show_qt()
         self.ui.label_4.mousePressEvent = self.mouse_press_event
         self.ui.label_4.setCursor(Qt.ArrowCursor)
 
@@ -298,10 +298,24 @@ class MainFunc(QMainWindow):
             self.image_name = os.path.basename(self.image_path).split('.')[0]
             # print(self.image_name)
 
-            self.img_path, self.img_width, self.img_height = Change_image_Size(self.img_path)
+            target_width, target_height, _ = Change_image_Size(self.img_path)
             self.image = cv2.imread(self.img_path)
-            self.AT.Set_Image(self.image)
-            self.show_qt(self.img_path)
+            if self.image is None:
+                upWindowsh("无法加载图片")
+                return
+
+            if target_width and target_height:
+                if (self.image.shape[1], self.image.shape[0]) != (target_width, target_height):
+                    self.image = cv2.resize(
+                        self.image, (target_width, target_height), interpolation=cv2.INTER_AREA
+                    )
+                self.img_width = target_width
+                self.img_height = target_height
+            else:
+                self.img_height, self.img_width = self.image.shape[:2]
+
+            self.AT.Set_Image(self.image.copy())
+            self.show_qt()
             self.Exists_Labels_And_Boxs()
             self.ui.currentImageLabel.setText(f"{os.path.basename(self.image_path)}")
         else:
@@ -351,11 +365,32 @@ class MainFunc(QMainWindow):
                 self.Show_Exists()
                 return
 
-    def show_qt(self, img_path):
-        if img_path != None:
-            Qt_Gui = QtGui.QPixmap(img_path)
-            self.ui.label_3.setFixedSize(self.img_width, self.img_height)
-            self.ui.label_3.setPixmap(Qt_Gui)
+    def _set_label_pixmap_from_array(self, image_array):
+        if image_array is None:
+            return
+
+        image_rgb = cv2.cvtColor(image_array, cv2.COLOR_BGR2RGB)
+        height, width, channels = image_rgb.shape
+        bytes_per_line = channels * width
+        q_image = QImage(image_rgb.data, width, height, bytes_per_line, QImage.Format_RGB888)
+
+        target_width = self.img_width or width
+        target_height = self.img_height or height
+
+        pixmap = QtGui.QPixmap.fromImage(q_image)
+        pixmap = pixmap.scaled(
+            target_width,
+            target_height,
+            Qt.KeepAspectRatio,
+            Qt.SmoothTransformation,
+        )
+
+        self.ui.label_3.setFixedSize(target_width, target_height)
+        self.ui.label_3.setPixmap(pixmap)
+
+    def show_qt(self):
+        if self.image is not None:
+            self._set_label_pixmap_from_array(self.image)
 
     def next_img(self):
         if self.img_path and not self.clicked_event and not self.paint_event:
@@ -577,24 +612,21 @@ class MainFunc(QMainWindow):
 
     # 显示已存在框
     def Show_Exists(self):
-        image = cv2.imread(self.img_path)
+        if self.image is None:
+            return
+
+        image = self.image.copy()
         if self.clicked_save == [] and self.paint_save == []:
-            self.show_qt(self.img_path)
+            self.show_qt()
         else:
-            if self.clicked_save != []:
+            if self.clicked_save:
                 for i in self.clicked_save:
                     image = cv2.rectangle(image, (i[0], i[1]), (i[2], i[3]), (0, 255, 0), 2)
-            if self.paint_save != []:
+            if self.paint_save:
                 for i in self.paint_save:
                     image = cv2.rectangle(image, (i[0], i[1]), (i[2], i[3]), (0, 0, 255), 2)
 
-            h,w,channels=image.shape
-            bytes_per_line = channels * w
-            q_image = QImage(image.data, w, h, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
-
-            Qt_Gui = QtGui.QPixmap(q_image)
-            self.ui.label_3.setFixedSize(self.img_width, self.img_height)
-            self.ui.label_3.setPixmap(Qt_Gui)
+            self._set_label_pixmap_from_array(image)
 
 # ##################################################################################################
     # 手动打标
@@ -615,7 +647,7 @@ class MainFunc(QMainWindow):
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.flag = True
-            self.show_qt(self.img_path)
+            self.show_qt()
             self.x0, self.y0 = event.pos().x(), event.pos().y()
             self.x1, self.y1 = self.x0, self.y0
             self.ui.label_4.update()
@@ -883,16 +915,26 @@ class MainFunc(QMainWindow):
                     self.image_name = os.path.basename(self.image_path).split('.')[0]
                     # print(self.image_name)
 
-                    self.img_path, self.img_width, self.img_height = Change_image_Size(self.img_path)
-                    print(self.img_path, self.img_width, self.img_height)
+                    target_width, target_height, _ = Change_image_Size(self.img_path)
                     self.image = cv2.imread(self.img_path)
+                    if self.image is None:
+                        upWindowsh("无法加载图片")
+                        return
 
-                    self.AT.Set_Image(self.image)
-                    # 转换为QPixmap并显示
-                    Qt_Gui = QtGui.QPixmap(self.img_path)
-                    # 设置label大小为图片原始大小
-                    self.ui.label_3.setFixedSize(self.img_width, self.img_height)
-                    self.ui.label_3.setPixmap(Qt_Gui)
+                    if target_width and target_height:
+                        if (self.image.shape[1], self.image.shape[0]) != (target_width, target_height):
+                            self.image = cv2.resize(
+                                self.image,
+                                (target_width, target_height),
+                                interpolation=cv2.INTER_AREA,
+                            )
+                        self.img_width = target_width
+                        self.img_height = target_height
+                    else:
+                        self.img_height, self.img_width = self.image.shape[:2]
+
+                    self.AT.Set_Image(self.image.copy())
+                    self.show_qt()
                     self.ui.currentImageLabel.setText(f"当前图片：{os.path.basename(self.image_path)}")
 
             # 鼠标点击触发

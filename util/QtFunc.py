@@ -23,21 +23,32 @@ def list_images_in_directory(directory):
 
 # 修改照片大小
 def Change_image_Size(image_path):
-    # 打开原图像
-    original_image = Image.open(image_path)
-    # 获取照片大小
-    width, height = original_image.size
-    ratio = 1300 / width
-    width = 1300
-    height *= ratio
-    reduced_image = original_image.resize((int(width), int(height)))
-    if height > 850:
-        ratio = 850 / height
-        height = 850
-        width *= ratio
-        reduced_image = original_image.resize((int(width), int(height)))
-    reduced_image.save((image_path))
-    return image_path, int(width), int(height)
+    """计算图像在界面中的显示尺寸并返回缩放比例。
+
+    该函数仅根据原始图像尺寸计算目标显示尺寸，
+    不会对磁盘上的原图进行任何修改。
+
+    Returns:
+        tuple: (target_width, target_height, scale_ratio)
+    """
+
+    with Image.open(image_path) as original_image:
+        width, height = original_image.size
+
+    if width == 0 or height == 0:
+        return 0, 0, 1.0
+
+    max_width = 1300
+    max_height = 850
+
+    width_ratio = max_width / width
+    height_ratio = max_height / height
+    scale_ratio = min(width_ratio, height_ratio)
+
+    target_width = max(1, int(round(width * scale_ratio)))
+    target_height = max(1, int(round(height * scale_ratio)))
+
+    return target_width, target_height, scale_ratio
 
 
 def list_label(label_path):
