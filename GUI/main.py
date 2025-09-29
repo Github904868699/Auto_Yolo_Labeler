@@ -95,6 +95,7 @@ class MainFunc(QMainWindow):
 
         self.image_files = None
         self.img_path = None
+        self.image = None
         self.save_path = None
         self.clicked_event = False
         self.paint_event = False
@@ -389,8 +390,9 @@ class MainFunc(QMainWindow):
         self.ui.label_3.setPixmap(pixmap)
 
     def show_qt(self):
-        if self.image is not None:
-            self._set_label_pixmap_from_array(self.image)
+        image = getattr(self, "image", None)
+        if image is not None:
+            self._set_label_pixmap_from_array(image)
 
     def next_img(self):
         if self.img_path and not self.clicked_event and not self.paint_event:
