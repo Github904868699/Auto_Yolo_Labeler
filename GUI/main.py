@@ -146,16 +146,16 @@ class MainFunc(QMainWindow):
         self.ui.actionVideo_marking.triggered.connect(self.video_marking)
 
 
-        self.ui.pushButton.clicked.connect(self.Btn_Start)
-        self.ui.pushButton_2.clicked.connect(self.Btn_Stop)
-        self.ui.pushButton_3.clicked.connect(self.Btn_Save)
-        self.ui.pushButton_4.clicked.connect(self.Btn_Replay)
-        self.ui.pushButton_5.clicked.connect(self.Btn_Auto)
+        self.ui.pushButton_play.clicked.connect(self.Btn_Start)
+        self.ui.pushButton_pause.clicked.connect(self.Btn_Stop)
+        self.ui.pushButton_capture.clicked.connect(self.Btn_Save)
+        self.ui.pushButton_replay.clicked.connect(self.Btn_Replay)
+        self.ui.pushButton_autoCapture.clicked.connect(self.Btn_Auto)
         self.ui.pushButton_start_marking.clicked.connect(self.Btn_Start_Marking)
 
-        self.ui.horizontalSlider.sliderReleased.connect(self.releaseSlider)
-        self.ui.horizontalSlider.sliderPressed.connect(self.pressSlider)
-        self.ui.horizontalSlider.sliderMoved.connect(self.moveSlider)
+        self.ui.slider_video.sliderReleased.connect(self.releaseSlider)
+        self.ui.slider_video.sliderPressed.connect(self.pressSlider)
+        self.ui.slider_video.sliderMoved.connect(self.moveSlider)
 
         # 获取视频总帧数和当前帧位置
         self.total_frames = 0
@@ -163,12 +163,12 @@ class MainFunc(QMainWindow):
 
     def Change_Enable(self,method="",state=False):
         if method=="ShowVideo":
-            self.ui.pushButton.setEnabled(state)
-            self.ui.pushButton_2.setEnabled(state)
-            self.ui.pushButton_3.setEnabled(state)
-            self.ui.pushButton_4.setEnabled(state)  # 初始时禁用重播按钮
-            self.ui.pushButton_5.setEnabled(state)
-            self.ui.horizontalSlider.setEnabled(state)
+            self.ui.pushButton_play.setEnabled(state)
+            self.ui.pushButton_pause.setEnabled(state)
+            self.ui.pushButton_capture.setEnabled(state)
+            self.ui.pushButton_replay.setEnabled(state)  # 初始时禁用重播按钮
+            self.ui.pushButton_autoCapture.setEnabled(state)
+            self.ui.slider_video.setEnabled(state)
         if method=="MakeTag":
             self.ui.actionPrev_Image.setEnabled(state)
             self.ui.actionNext_Image.setEnabled(state)
@@ -683,11 +683,11 @@ class MainFunc(QMainWindow):
             # 获取视频总帧数
             self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
             # 设置滑块范围
-            self.ui.horizontalSlider.setRange(0, self.total_frames)
+            self.ui.slider_video.setRange(0, self.total_frames)
             self.timer_camera.start(33)
             self.timer_camera.timeout.connect(self.OpenFrame)
             # 初始禁用重播按钮
-            self.ui.pushButton_4.setEnabled(False)
+            self.ui.pushButton_replay.setEnabled(False)
         
             self.Change_Enable(method="ShowVideo", state=True)
             self.Change_Enable(method="MakeTag", state=False)
@@ -704,7 +704,7 @@ class MainFunc(QMainWindow):
                 # 更新当前帧位置
                 self.current_frame = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
                 # 更新滑块位置
-                self.ui.horizontalSlider.setValue(self.current_frame)
+                self.ui.slider_video.setValue(self.current_frame)
                 
                 # 调整视频帧大小
                 height, width = image.shape[:2]
@@ -737,7 +737,7 @@ class MainFunc(QMainWindow):
                 self.cap.release()
                 self.timer_camera.stop()
                 # 视频结束时启用重播按钮
-                self.ui.pushButton_4.setEnabled(True)
+                self.ui.pushButton_replay.setEnabled(True)
 
 
     def Btn_Start(self):
@@ -831,11 +831,11 @@ class MainFunc(QMainWindow):
             # 重新打开视频文件
             self.cap = cv2.VideoCapture(self.video_path)
             # 重置滑块位置
-            self.ui.horizontalSlider.setValue(0)
+            self.ui.slider_video.setValue(0)
             # 开始播放
             self.timer_camera.start(33)                 
             # 禁用重播按钮
-            self.ui.pushButton_4.setEnabled(False)
+            self.ui.pushButton_replay.setEnabled(False)
 
     def Btn_Auto(self):
         if self.video_path and self.video_save_path:
