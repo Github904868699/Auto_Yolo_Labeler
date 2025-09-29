@@ -105,10 +105,18 @@ class Ui_MainWindow(object):
         self.videoWidget.setSizePolicy(sizePolicy2)
         self.videoWidget.setObjectName("videoWidget")
         self.videoStackedLayout.addWidget(self.videoWidget)
-        self.label_4 = None
+        self.label_4 = MyLabel(self.videoContainer)
+        self.label_4.setObjectName("label_4")
+        self.label_4.setSizePolicy(sizePolicy1)
+        self.label_4.setMouseTracking(True)
+        self.label_4.setStyleSheet("background: transparent;")
+        self.label_4.setVisible(False)
+        self.label_4.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents, True)
+        self.videoStackedLayout.addWidget(self.label_4)
+        self.videoWidget.hide()
         self.mediaPlayer = QMediaPlayer(self.videoContainer)
         self.mediaPlayer.setVideoOutput(self.videoWidget)
-        self.disableLabel4()
+        self.videoStackedLayout.setCurrentWidget(self.label_3)
         self.verticalLayout_videoContainer.addWidget(self.videoContainer)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.layoutWidget = QtWidgets.QWidget(self.splitter)
@@ -271,32 +279,17 @@ class Ui_MainWindow(object):
         size2 = max(total_size - size1, 0)
         self.splitter.setSizes([size1, size2])
 
-    def _setOverlayWidget(self, widget_class):
-        if isinstance(self.label_4, widget_class):
-            return
-        if self.label_4 is not None:
-            index = self.videoStackedLayout.indexOf(self.label_4)
-            if index != -1:
-                self.videoStackedLayout.removeWidget(self.label_4)
-            self.label_4.deleteLater()
-        self.label_4 = widget_class(self.videoContainer)
-        self.label_4.setObjectName("label_4")
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        self.label_4.setSizePolicy(sizePolicy)
-        self.label_4.setMouseTracking(True)
-        self.label_4.setStyleSheet("background: transparent;")
-        accepts_events = widget_class is MyLabel
-        self.label_4.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents, not accepts_events)
-        self.videoStackedLayout.addWidget(self.label_4)
-        self.videoStackedLayout.setCurrentWidget(self.label_4)
-
     def enableLabel4(self):
-        self._setOverlayWidget(MyLabel)
+        self.label_4.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents, False)
+        self.label_4.setVisible(True)
+        self.videoWidget.hide()
+        self.label_3.show()
 
     def disableLabel4(self):
-        self._setOverlayWidget(QtWidgets.QLabel)
+        self.label_4.clear()
+        self.label_4.setVisible(False)
+        self.label_4.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents, True)
+        self.videoWidget.show()
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate

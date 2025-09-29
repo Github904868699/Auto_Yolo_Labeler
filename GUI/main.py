@@ -11,7 +11,7 @@ import numpy as np
 from util.QtFunc import *
 from util.xmlfile import *
 
-from GUI.UI_Main import Ui_MainWindow
+from GUI.UI_Main import Ui_MainWindow, MyLabel
 from GUI.message import LabelInputDialog
 
 sys.path.append("smapro")
@@ -89,6 +89,17 @@ class MainFunc(QMainWindow):
         QCoreApplication.instance().aboutToQuit.connect(self.clean_up)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+
+        self.overlay_label = None
+        for index in range(self.ui.videoStackedLayout.count()):
+            widget = self.ui.videoStackedLayout.widget(index)
+            if isinstance(widget, MyLabel):
+                self.overlay_label = widget
+                break
+        if self.overlay_label is None and isinstance(self.ui.label_4, MyLabel):
+            self.overlay_label = self.ui.label_4
+        if self.overlay_label is not None:
+            self.ui.label_4 = self.overlay_label
 
         self.sld_video_pressed=False
 
@@ -250,8 +261,9 @@ class MainFunc(QMainWindow):
         self.labels = []
         if self.img_path:
             self.show_qt()
-        self.ui.label_4.mousePressEvent = self.mouse_press_event
-        self.ui.label_4.setCursor(Qt.ArrowCursor)
+        if self.overlay_label is not None:
+            self.overlay_label.mousePressEvent = self.mouse_press_event
+            self.overlay_label.setCursor(Qt.ArrowCursor)
 
         base_path = Path(self.save_path) / self.image_name if self.save_path and self.image_name else None
         if base_path:
@@ -263,8 +275,9 @@ class MainFunc(QMainWindow):
                 txt_path.unlink()
 
     def _restore_label4_interaction(self):
-        self.ui.label_4.mousePressEvent = self.mouse_press_event
-        self.ui.label_4.setCursor(Qt.ArrowCursor)
+        if self.overlay_label is not None:
+            self.overlay_label.mousePressEvent = self.mouse_press_event
+            self.overlay_label.setCursor(Qt.ArrowCursor)
 
     def get_dir(self):
         self.clear_label_list()
@@ -287,7 +300,8 @@ class MainFunc(QMainWindow):
             # 禁用开始检测打标按钮
             self.ui.pushButton_start_marking.setEnabled(False)
             # 鼠标点击触发
-            self.ui.label_4.mousePressEvent = self.mouse_press_event
+            if self.overlay_label is not None:
+                self.overlay_label.mousePressEvent = self.mouse_press_event
         else:
             self.ui.currentImageLabel.setText("")
 
@@ -481,7 +495,8 @@ class MainFunc(QMainWindow):
                         self.dialog.confirmed.connect(self.video_on_dialog_confirmed)
                         
                         # 禁用label4的鼠标事件
-                        self.ui.label_4.mousePressEvent = None
+                        if self.overlay_label is not None:
+                            self.overlay_label.mousePressEvent = None
 
                     if (event.key() == 81):
                         self.clicked_event = False
@@ -491,8 +506,9 @@ class MainFunc(QMainWindow):
                             self.pending_video_prompts = []
                             self.pending_video_obj_id = None
                         self.Show_Exists()
-                        self.ui.label_4.mousePressEvent = self.mouse_press_event
-                        self.ui.label_4.setCursor(Qt.ArrowCursor)
+                        if self.overlay_label is not None:
+                            self.overlay_label.mousePressEvent = self.mouse_press_event
+                            self.overlay_label.setCursor(Qt.ArrowCursor)
             else:
                 if self.clicked_event or self.paint_event:
                     if (event.key() == 83):
@@ -506,8 +522,9 @@ class MainFunc(QMainWindow):
                         self.paint_event = False
                         self.save = True
                         self.Show_Exists()
-                        self.ui.label_4.mousePressEvent = self.mouse_press_event
-                        self.ui.label_4.setCursor(Qt.ArrowCursor)
+                        if self.overlay_label is not None:
+                            self.overlay_label.mousePressEvent = self.mouse_press_event
+                            self.overlay_label.setCursor(Qt.ArrowCursor)
 
             if event.key() == Qt.Key_Delete:
                 if self.remove_selected_labels():
@@ -545,8 +562,9 @@ class MainFunc(QMainWindow):
             self.label_boxes_by_row.append(box)
             self.save_annotation_files(self.image_path, self.image_name, size, self.labels)
 
-            self.ui.label_4.mousePressEvent = self.mouse_press_event
-            self.ui.label_4.setCursor(Qt.ArrowCursor)
+            if self.overlay_label is not None:
+                self.overlay_label.mousePressEvent = self.mouse_press_event
+                self.overlay_label.setCursor(Qt.ArrowCursor)
             
         self.clicked_event = False
         self.paint_event = False
@@ -636,12 +654,12 @@ class MainFunc(QMainWindow):
         if self.img_path != None:
             self.paint_event = True
             self.clicked_event = False
-            if self.save:
-                self.ui.label_4.mousePressEvent = self.mousePressEvent
-                self.ui.label_4.mouseMoveEvent = self.mouseMoveEvent
-                self.ui.label_4.mouseReleaseEvent = self.mouseReleaseEvent
-                self.ui.label_4.paintEvent = self.paintEvent
-                self.ui.label_4.setCursor(Qt.CrossCursor)
+            if self.save and self.overlay_label is not None:
+                self.overlay_label.mousePressEvent = self.mousePressEvent
+                self.overlay_label.mouseMoveEvent = self.mouseMoveEvent
+                self.overlay_label.mouseReleaseEvent = self.mouseReleaseEvent
+                self.overlay_label.paintEvent = self.paintEvent
+                self.overlay_label.setCursor(Qt.CrossCursor)
                 self.save = False
             else:
                 upWindowsh("请先输入标签")
@@ -652,7 +670,8 @@ class MainFunc(QMainWindow):
             self.show_qt()
             self.x0, self.y0 = event.pos().x(), event.pos().y()
             self.x1, self.y1 = self.x0, self.y0
-            self.ui.label_4.update()
+            if self.overlay_label is not None:
+                self.overlay_label.update()
 
     def mouseReleaseEvent(self, event):
         if self.flag:
@@ -663,14 +682,16 @@ class MainFunc(QMainWindow):
     def mouseMoveEvent(self, event):
         if self.flag:
             self.x1, self.y1 = event.pos().x(), event.pos().y()
-            self.ui.label_4.update()
+            if self.overlay_label is not None:
+                self.overlay_label.update()
 
     def paintEvent(self, event):
         super(MainFunc, self).paintEvent(event)
         if self.flag and self.x0 != 0 and self.y0 != 0 and self.x1 != 0 and self.y1 != 0:
-            painter = QPainter(self.ui.label_4)
-            painter.setPen(QPen(Qt.red, 4, Qt.SolidLine))
-            painter.drawRect(QRect(self.x0, self.y0, abs(self.x1 - self.x0), abs(self.y1 - self.y0)))
+            if self.overlay_label is not None:
+                painter = QPainter(self.overlay_label)
+                painter.setPen(QPen(Qt.red, 4, Qt.SolidLine))
+                painter.drawRect(QRect(self.x0, self.y0, abs(self.x1 - self.x0), abs(self.y1 - self.y0)))
 
     def saveAndUpdate(self):
         try:
@@ -940,7 +961,8 @@ class MainFunc(QMainWindow):
                     self.ui.currentImageLabel.setText(f"当前图片：{os.path.basename(self.image_path)}")
 
             # 鼠标点击触发
-            self.ui.label_4.mousePressEvent = self.mouse_press_event
+            if self.overlay_label is not None:
+                self.overlay_label.mousePressEvent = self.mouse_press_event
         else:
             self.is_video_mode = False
             self.ui.pushButton_start_marking.setEnabled(False)
