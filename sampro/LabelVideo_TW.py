@@ -420,7 +420,7 @@ class AnythingVideo_TW():
                     result = self.Draw_Mask(out_mask, frame.copy(), out_obj_id)
                     if isinstance(result, tuple) and len(result) == 5:
                         frame, x, y, w, h = result
-                        video_label.append([x, y, w, h])
+                        scaled_x, scaled_y, scaled_w, scaled_h = x, y, w, h
                     else:
                         print(f"Warning: Draw_Mask returned unexpected format at frame {frame_idx}")
                         continue
@@ -452,9 +452,31 @@ class AnythingVideo_TW():
                                 resized_width = int(resized_width * ratio)
                                 reduced_image = reduced_image.resize((int(resized_width), int(resized_height)))
 
+                            # 计算缩放比例
+                            scale_x = resized_width / orig_width if orig_width else 1.0
+                            scale_y = resized_height / orig_height if orig_height else 1.0
+
+                            # 使用缩放比例换算坐标和尺寸
+                            scaled_x = x * scale_x
+                            scaled_y = y * scale_y
+                            scaled_w = w * scale_x
+                            scaled_h = h * scale_y
+
                             # 保存调整后的图片
                             save_path_frame = f"{save_image_path}/{frame_idx}.jpg"
                             reduced_image.save(save_path_frame)
+
+                            # 手动验证：输出缩放后框信息并确认是否在范围内
+                            bbox_within_bounds = (
+                                0 <= scaled_x <= resized_width + 1e-3
+                                and 0 <= scaled_y <= resized_height + 1e-3
+                                and scaled_x + max(scaled_w, 0) <= resized_width + 1e-3
+                                and scaled_y + max(scaled_h, 0) <= resized_height + 1e-3
+                            )
+                            print(
+                                f"[Verification] Frame {frame_idx}: scaled bbox (x={scaled_x:.2f}, y={scaled_y:.2f}, "
+                                f"w={scaled_w:.2f}, h={scaled_h:.2f}) within image {resized_width}x{resized_height}: {bbox_within_bounds}"
+                            )
 
                             if save_path:
                                 label_name = None
@@ -469,12 +491,14 @@ class AnythingVideo_TW():
                                     int(resized_width),
                                     int(resized_height),
                                     label_name,
-                                    x,
-                                    y,
-                                    w,
-                                    h,
+                                    scaled_x,
+                                    scaled_y,
+                                    scaled_w,
+                                    scaled_h,
                                 )
                                 xml_messages.append([out_obj_id, result_label, file_path, size])
+
+                        video_label.append([scaled_x, scaled_y, scaled_w, scaled_h])
             else:
                 print(f"Warning: Invalid frame at index {frame_idx}")
 
